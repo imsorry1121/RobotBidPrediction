@@ -4,6 +4,7 @@ from time import time
 from sklearn.metrics import roc_auc_score
 import networkx as nx
 import feature as ft
+# 2015.6.9 coded by Ken
 
 def main():
 	print("main")
