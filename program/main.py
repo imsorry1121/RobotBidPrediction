@@ -4,6 +4,7 @@ from time import time
 from sklearn.metrics import roc_auc_score
 import networkx as nx
 import feature as ft
+import csv
 # 2015.6.9 coded by Ken
 
 def main():
@@ -36,10 +37,10 @@ def evaluate(predictFile="../data/train.csv", gtFile="../data/train.csv", output
 def createGraph(bidderFile="../data/train.csv", bidderFile2="../data/test.csv", bidFile="../data/bid_short.csv"):
 	s= time()
 	g = nx.Graph()
-	bidders1 = initNode(g, bidderFile)
-	bidders2 = initNode(g, bidderFile2)
+	biddersTrain = initNode(g, bidderFile)
+	biddersTest = initNode(g, bidderFile2)
 	auctions = initEdge(g, bidFile)
-	bidders = bidders1+bidders2
+	bidders = biddersTrain+biddersTest
 	print("Init Graph Over:"+str(time()-s))
 	updateAuction(g, auctions)
 	updateBidder(g, bidders)
@@ -166,8 +167,20 @@ def updateIpDistri(g, bidders):
 	return ipDistri
 
 
-def writeFeature():
-	print("write feature")
+def getFeatures(g, bidders, auctions, ipDistri):
+	print("get feature")
+	rows = list()
+	for bidder in bidders:
+		row = bidder + ft.feature_extract(g, bidder, ipDistri)
+		rows.append(row)
+	return rows
+
+def writeRow(rows, outputFile):
+	with open(outputFile, 'wb') as fo:
+		writer =csv.writer(fo)
+		for row in rows:
+			writer.write(rows)
+
 
 if __name__ == "__main__":
 	# main()

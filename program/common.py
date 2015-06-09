@@ -16,6 +16,28 @@ def overlap(target, l):
 			count = count+1
 	return count
 
+def multiprocess():
+	s = time()
+	nprocs = 8
+	procList = list()
+	q = mp.Queue()
+	result = list()
+	for i in range(nprocs):
+		p = mp.Process(target=f, args=([3], q))
+		p.start()
+		procList.append(p)
+	for i in range(nprocs):
+		result += q.get()
+	for p in procList:
+		p.join()
+	e = time()
+	print (result)
+	print (e-s)
+
+
+def f(num, q):
+	q.put(num)
+
 if __name__ == "__main__":
 	ratios = [0.2,0.1,0.1,0.4,0.2]
 	ratios2 = [0.3,0.3,0.3]
