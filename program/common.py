@@ -1,18 +1,26 @@
 from math import log
+# ps is a list
 def entropy(ps):
+	l = len(ps)
 	s = sum(ps)
-	if s!=1:
-		for i in range(len(ps)):
-			ps[i] = float(ps[i])/s
 	result = float()
-	for p in ps:
-		result = result + p*log(p)
-	return -result/log(len(ps))
+	if l == 0:
+		return 0
+	elif l==1:
+		return 1
+	else:
+		if s!=1:
+			for i in range(len(ps)):
+				ps[i] = float(ps[i])/s
+		result = float()
+		for p in ps:
+			result = result + p*log(p)
+		return -result/log(l)
 
 def overlap(target, l):
 	count = 0
-	for i in range(len(l-1)):
-		if target==l[i] && target==l[i+1]:
+	for i in range(len(l)-1):
+		if target==l[i] and target==l[i+1]:
 			count = count+1
 	return count
 

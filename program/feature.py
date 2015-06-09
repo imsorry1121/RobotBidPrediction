@@ -2,12 +2,12 @@ import common as cm
 # feature extracion
 
 def feature_extract(g, bidder, ipDistri):
-	features = list()
 	features = bidder_info(g,bidder)+bid_info(g, bidder)+country_info(g, bidder)+device_info(g, bidder)+ip_info(g, ipDistri, bidder)
+	return features
 
 
 def bidder_info(g, bidder):
-	return [bid_num, auction_num(g, bidder), avg_bid_num(g, bidder), auction_distri(g, bidder), auction_ratio(g, bidder)]
+	return [bid_num(g, bidder), auction_num(g, bidder), avg_bid_num(g, bidder), auction_distri(g, bidder), auction_ratio(g, bidder)]
 
 # bidder info
 # feature 1: Bidder's number of total bid
@@ -28,15 +28,19 @@ def avg_bid_num(g, bidder):
 
 # feature 4: Bidder's auction's bids entropy
 def auction_distri(g, bidder):
-	ratios = g.node[bidder]["auctionDistri"].values()
+	ratios = list(g.node[bidder]["auctionDistri"].values())
 	return cm.entropy(ratios)
 
 # feature 5: average Bidder in every auction's ratio 
 def auction_ratio(g, bidder):
 	avgRatio = float()
-	ratios = g.node[bidder]["auctionRatios"]
-	avgRatio = sum(ratios)/len(ratios)
-	return avgRatio
+	ratios = list(g.node[bidder]["auctionRatios"].values())
+	l = len(ratios)
+	if l ==0:
+		return 0
+	else:
+		avgRatio = sum(ratios)/l
+		return avgRatio
 
 # feature 6: 
 
@@ -47,16 +51,19 @@ def bid_info(g, bidder):
 	bidOverlapNormNum = 0
 	bidOverlapNumAuction = 0
 	bidOverlapNormNumAuction = 0
-	edges = g.edge[bidder]
-	auctions = len(edges)
-	for (a, attr) in edges:
-		bidderRecord = attr["bidders"]
+	edges = g.edges(bidder)
+	auctionNum = len(edges)
+	if auctionNum ==0:
+		return [0,0,0,0]
+	# print(edges)
+	for (b, a) in edges:
+		bidderRecord = g.node[a]["bidders"]
 		count = cm.overlap(bidder, bidderRecord)
 		bidOverlapNum = bidOverlapNum+count
 		if count>0:
 			bidOverlapNumAuction = bidOverlapNumAuction+1
-	bidOverlapNormNum = bidOverlapNum/g.node[bidder]["num"]
-	bidOverlapNormNumAuction = bidOverlapNumAuction/auctions
+	bidOverlapNormNum = bidOverlapNum/bid_num(g, bidder)
+	bidOverlapNormNumAuction = bidOverlapNumAuction/auctionNum
 	return [bidOverlapNum, bidOverlapNormNum, bidOverlapNumAuction, bidOverlapNormNumAuction]
 
 # country 
@@ -64,7 +71,8 @@ def bid_info(g, bidder):
 def country_info(g, bidder):
 	countryDistri = g.node[bidder]["countryDistri"]
 	countryNum = len(countryDistri)
-	countryEntropy = cm.entropy(countryDistri.values())
+	# print(list(countryDistri.values()))
+	countryEntropy = cm.entropy(list(countryDistri.values()))
 	return [countryNum, countryEntropy]
 
 # device
@@ -72,7 +80,7 @@ def country_info(g, bidder):
 def device_info(g, bidder):
 	deviceDistri = g.node[bidder]["deviceDistri"]
 	deviceNum = len(deviceDistri)
-	deviceEntropy = cm.entropy(deviceDistri.values())
+	deviceEntropy = cm.entropy(list(deviceDistri.values()))
 	return [deviceNum, deviceEntropy]
 
 # ip

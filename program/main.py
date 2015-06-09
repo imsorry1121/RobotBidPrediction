@@ -7,8 +7,13 @@ import feature as ft
 import csv
 # 2015.6.9 coded by Ken
 
-def main():
+def main(outputFile = "../result/featureTest.csv"):
 	print("main")
+	biddersTrain, biddersTest, bidders, auctions, ipDistri, g = createGraph()
+	rows = getFeatures(g, biddersTest, ipDistri)
+	writeRow(rows, outputFile)
+
+
 
 # evaluation
 # predictFile and gtFile need the same amount of rows
@@ -34,7 +39,7 @@ def evaluate(predictFile="../data/train.csv", gtFile="../data/train.csv", output
 		fo.write(outputStr)
 	return score
 
-def createGraph(bidderFile="../data/train.csv", bidderFile2="../data/test.csv", bidFile="../data/bid_short.csv"):
+def createGraph(bidderFile="../data/train.csv", bidderFile2="../data/test.csv", bidFile="../data/bids.csv"):
 	s= time()
 	g = nx.Graph()
 	biddersTrain = initNode(g, bidderFile)
@@ -44,10 +49,12 @@ def createGraph(bidderFile="../data/train.csv", bidderFile2="../data/test.csv", 
 	print("Init Graph Over:"+str(time()-s))
 	updateAuction(g, auctions)
 	updateBidder(g, bidders)
-	ipDistri = updateIpDistri(g)
+	ipDistri = updateIpDistri(g, bidders)
 	print(g.node["ewmzr"])
 	print(g.node["8dac2b259fd1c6d1120e519fb1ac14fbqvax8"])
 	print("Update Graph Over:"+str(time()-s))
+	return biddersTrain, biddersTest, bidders, auctions, ipDistri, g
+
 	# print(g.nodes())
 
 
@@ -61,7 +68,7 @@ def initNode(g, bidderFile):
 			data = line.strip().split(',')
 			bidder = data[0]
 			bidders.append(bidder)
-			g.add_node(bidder, type="bidder", ips=list(), device=dict(), country=dict())
+			g.add_node(bidder, type="bidder", ips=list(), auctionDistri=dict(), auctionRatios=dict(), deviceDistri=dict(), countryDistri=dict(), avgBidNum=0)
 			for i in range(1,len(data)):
 				g.node[bidder][titles[i]] = data[i]
 	return bidders
@@ -96,9 +103,11 @@ def initEdge(g, bidFile):
 			g.node[bidder]["deviceDistri"] = deviceDistri
 			# add auction
 			if g.has_node(auction):
-				g.add_node(auction, type="auction",merchandise=merchandise, bidders=[bidder])
+				bidders = g.node[auction]["bidders"]
+				bidders.append(bidder)
+				g.node[auction]["bidders"] = bidders		
 			else:
-				g.node[auction]["bidders"] = g.node[auction]["bidders"].append(bidder)
+				g.add_node(auction, type="auction",merchandise=merchandise, bidders=[bidder])
 			# bidders = 
 			auctions.append(auction)
 			# add and revise edge information
@@ -141,6 +150,8 @@ def updateAuction(g, auctions):
 def updateBidder(g, bidders):
 	for bidder in bidders:
 		edges = g.edge[bidder]
+		if len(edges)==0:
+			continue
 		auctionRatios = dict()
 		auctionDistri = dict()
 		total = int()
@@ -163,26 +174,31 @@ def updateIpDistri(g, bidders):
 	for bidder in bidders:
 		ips = g.node[bidder]["ips"]
 		for ip in ips:
-			ipDistri[ip] = ipDistri.get(ip, list()).append(bidder)
+			bidders = ipDistri.get(ip, list())
+			bidders.append(bidder)
+			ipDistri[ip] = bidders
 	return ipDistri
 
 
-def getFeatures(g, bidders, auctions, ipDistri):
+def getFeatures(g, bidders, ipDistri):
 	print("get feature")
 	rows = list()
 	for bidder in bidders:
-		row = bidder + ft.feature_extract(g, bidder, ipDistri)
+		# print(bidder)
+		# print(ft.feature_extract(g, bidder, ipDistri))
+		row = [bidder] + ft.feature_extract(g, bidder, ipDistri)
 		rows.append(row)
 	return rows
 
 def writeRow(rows, outputFile):
-	with open(outputFile, 'wb') as fo:
+	with open(outputFile, 'w', newline="") as fo:
 		writer =csv.writer(fo)
 		for row in rows:
-			writer.write(rows)
+			# print(row)
+			writer.writerow(row)
 
 
 if __name__ == "__main__":
-	# main()
-	createGraph()
+	main()
+	# createGraph()
 	# evaluate()
