@@ -13,11 +13,11 @@ bid.test.ans = read.csv("../result/test.csv")
 names(bid.train) = names(bid.test) = c('id', 'bidNum', 'auctionNum', 'bidNumPerAuction', 'bidNumPerAuctionEntropy', 'bidPropPerAuction', 'bidOverlapNum', 'bidOverlapNormNum', 'bidOverlapPerAuction', 'bidOverlapPerAuctionNorm', 'countryNum', 'countryNumEntropy', 'deviceNum', 'deviceNumEntropy', 'ipNum', 'ipShared')
 bid.train$outcome = as.factor(bid.train.ans$outcome)
 #bid.test$outcome = bid.test.ans$outcome
-bid.test.ans$outcome = as.factor(bid.test.ans$outcome)
 bid.train$id = bid.test$id = NULL
-
 f = outcome~.
 
 bid.svm = svm(f, bid.train, type = 'C-classification', probability = T, kernel = 'sigmoid')
-pred = predict(bid.svm, bid.test)
-octable = table(pred, bid.test.ans$outcome)
+pred = data.frame(attr(predict(bid.svm, bid.test, probability = T), "prob"))
+bid.test.ans$prediction = pred[,2]
+bid.test.ans = bid.test.ans[,-c(2,3)]
+write.csv(bid.test.ans, "tempResult.csv")
