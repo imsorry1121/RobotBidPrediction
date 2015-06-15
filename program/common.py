@@ -1,4 +1,7 @@
 from math import log
+from math import floor
+from math import ceil
+import numpy as np
 # ps is a list
 def entropy(ps):
 	l = len(ps)
@@ -14,8 +17,23 @@ def entropy(ps):
 				ps[i] = float(ps[i])/s
 		result = float()
 		for p in ps:
-			result = result + p*log(p)
+			if p !=0:
+				result = result + p*log(p)
 		return -result/log(l)
+# mean, max, min, std, entropy
+def stats(values):
+	if len(values)==0:
+		return [0,0,0,0,0]
+	else:
+		return [float(sum(values))/len(values), max(values), min(values), np.std(values), entropy(values)]
+
+def sumWithDistance(values, distance):
+	newValues = [0]*(ceil(float(len(values))/distance))
+	for pos in range(len(values)):
+		newPos = floor(pos/distance)
+		newValues[newPos] = newValues[newPos]+values[pos]
+	return newValues
+
 
 def overlap(target, l):
 	count = 0
@@ -45,6 +63,7 @@ def multiprocess():
 
 def f(num, q):
 	q.put(num)
+
 
 if __name__ == "__main__":
 	ratios = [0.2,0.1,0.1,0.4,0.2]

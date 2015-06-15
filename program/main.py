@@ -5,13 +5,27 @@ from sklearn.metrics import roc_auc_score
 import networkx as nx
 import feature as ft
 import csv
+from math import floor
 # 2015.6.9 coded by Ken
+day_duration = 4547368124071.8799
+time_start = 9631916820392676.0 
 
-def main(outputFile = "../result/featureTest.csv"):
+def main(testingFile = "../result/featureTest", trainingFile= "../result/featureTrain"):
+	s = time()
 	print("main")
-	biddersTrain, biddersTest, bidders, auctions, ipDistri, g = createGraph()
-	rows = getFeatures(g, biddersTest, ipDistri)
-	writeRow(rows, outputFile)
+	biddersTrain, biddersTest, bidders, auctions, ipBidderList, g = createGraph()
+	m = time()
+	print(m-s)
+	testing = getInstances(g, biddersTest, ipBidderList)
+	training = getInstances(g, biddersTrain, ipBidderList)
+
+	print(time()-m)
+	date = dt.now()
+	timeStr = str(date.year)+str(date.month)+str(date.day)+'_'+str(date.hour)+str(date.minute)
+	testingFile = testingFile+timeStr+'.csv'
+	trainingFile = trainingFile+timeStr+'.csv'
+	writeRow(testing, testingFile)
+	writeRow(training, trainingFile)
 
 
 
@@ -49,11 +63,11 @@ def createGraph(bidderFile="../data/train.csv", bidderFile2="../data/test.csv", 
 	print("Init Graph Over:"+str(time()-s))
 	updateAuction(g, auctions)
 	updateBidder(g, bidders)
-	ipDistri = updateIpDistri(g, bidders)
+	ipBidderList = updateIpBidderList(g, bidders)
 	print(g.node["ewmzr"])
 	print(g.node["8dac2b259fd1c6d1120e519fb1ac14fbqvax8"])
 	print("Update Graph Over:"+str(time()-s))
-	return biddersTrain, biddersTest, bidders, auctions, ipDistri, g
+	return biddersTrain, biddersTest, bidders, auctions, ipBidderList, g
 
 	# print(g.nodes())
 
@@ -63,14 +77,29 @@ def initNode(g, bidderFile):
 	bidders = list()
 	with open(bidderFile, 'r') as fi:
 		titles = fi.readline().strip().split(',')
-		for line in fi:
-			# attrs = {"type": "bidder"}
-			data = line.strip().split(',')
-			bidder = data[0]
-			bidders.append(bidder)
-			g.add_node(bidder, type="bidder", ips=list(), auctionDistri=dict(), auctionRatios=dict(), deviceDistri=dict(), countryDistri=dict(), avgBidNum=0)
-			for i in range(1,len(data)):
-				g.node[bidder][titles[i]] = data[i]
+		if len(titles)==4:
+			for line in fi:
+				# attrs = {"type": "bidder"}
+				data = line.strip().split(',')
+				bidder = data[0]
+				outcome = data[-1]
+				bidders.append(bidder)
+				hourList = [0]*24
+				g.add_node(bidder, type="bidder", outcome=outcome,ipDistri=dict(),hourList=hourList, auctionDistri=dict(), auctionRatios=dict(), deviceDistri=dict(), countryDistri=dict(), avgBidNum=0)
+				for i in range(1,len(data)):
+					g.node[bidder][titles[i]] = data[i]
+		else:
+			for line in fi:
+				# attrs = {"type": "bidder"}
+				data = line.strip().split(',')
+				bidder = data[0]
+				outcome = 0
+				bidders.append(bidder)
+				hourList = [0]*24
+				g.add_node(bidder, type="bidder", outcome=outcome, ipDistri=dict(),hourList=hourList, auctionDistri=dict(), auctionRatios=dict(), deviceDistri=dict(), countryDistri=dict(), avgBidNum=0)
+				for i in range(1,len(data)):
+					g.node[bidder][titles[i]] = data[i]
+
 	return bidders
 
 def initEdge(g, bidFile):
@@ -85,20 +114,29 @@ def initEdge(g, bidFile):
 			auction=data[2]
 			merchandise = data[3]
 			device = data[4]
-			time = data[5]
+			time = float(data[5])
+			day = (time-time_start)/day_duration
+			hour = floor((day-floor(day))*24)
+			# time in day unit
 			country = data[6]
 			ip = data[7]
 			url = data[8]
-			bidAttrs = {"device":device, "time":time, "country":country, "ip":ip, "url":url}
+			bidAttrs = {"device":device, "day":day, 'hour': hour, "country":country, "ip":ip, "url":url}
 			# revise bidder information
-			ips = g.node[bidder]["ips"]
+			# ips = g.node[bidder]["ips"]
 			countryDistri = g.node[bidder]["countryDistri"]
 			deviceDistri = g.node[bidder]["deviceDistri"]
-			if ip not in ips:
-				ips.append(ip)
-				g.node[bidder]["ips"] = ips
+			ipDistri = g.node[bidder]['ipDistri']
+			hourList = g.node[bidder]['hourList']
+			# if ip not in ips:
+			# 	ips.append(ip)
+			# 	g.node[bidder]["ips"] = ips
+			hourList[hour] = hourList[hour]+1
+			ipDistri[ip] = ipDistri.get(ip, 0)+1
 			countryDistri[country] = countryDistri.get(country,0)+1
 			deviceDistri[device] = deviceDistri.get(device, 0)+1
+			g.node[bidder]['hourList'] = hourList
+			g.node[bidder]['ipDistri'] = ipDistri
 			g.node[bidder]["countryDistri"] = countryDistri
 			g.node[bidder]["deviceDistri"] = deviceDistri
 			# add auction
@@ -145,7 +183,7 @@ def updateAuction(g, auctions):
 
 
 # auctionRatio: bidder bid ratio in that auction, sum != 1
-# auctionDistri: bidder bid distribution of bidding auctions, sum = 1
+# auctionDistri: bidder bid distribution of bidding auctions, sum = total bids
 # avgBidNum: bidder average number of bid
 def updateBidder(g, bidders):
 	for bidder in bidders:
@@ -162,25 +200,36 @@ def updateBidder(g, bidders):
 			total = total + num
 			auctionDistri[auction] = num
 		# update distribution 
-		for auction in edges.keys():
-			auctionDistri[auction] = auctionDistri[auction]/total
+		# for auction in edges.keys():
+		# 	auctionDistri[auction] = auctionDistri[auction]/total
 		g.node[bidder]["auctionDistri"] = auctionDistri
 		g.node[bidder]["auctionRatios"] =  auctionRatios
 		g.node[bidder]["avgBidNum"] = total/len(edges)
 
 
-def updateIpDistri(g, bidders):
-	ipDistri = dict()
+def updateIpBidderList(g, bidders):
+	ipBidderList = dict()
 	for bidder in bidders:
-		ips = g.node[bidder]["ips"]
+		ips = list(g.node[bidder]["ipDistri"].keys())
 		for ip in ips:
-			bidders = ipDistri.get(ip, list())
+			bidders = ipBidderList.get(ip, list())
 			bidders.append(bidder)
-			ipDistri[ip] = bidders
-	return ipDistri
+			ipBidderList[ip] = bidders
+	return ipBidderList
+
+def getInstances(g, bidders, ipDistri):
+	print('Get instances')
+	instances= list()
+	for bidder in bidders:
+		features = ft.feature_extract(g, bidder, ipDistri)
+		outcome = g.node[bidder]['outcome']
+		instance = [outcome] + features
+		instances.append(instance)
+	return instances
 
 
-def getFeatures(g, bidders, ipDistri):
+
+def getFeatures(g, bidders, ipDistri, outcomes):
 	print("get feature")
 	rows = list()
 	for bidder in bidders:
@@ -191,8 +240,17 @@ def getFeatures(g, bidders, ipDistri):
 	return rows
 
 def writeRow(rows, outputFile):
+	titles = ["bid_total","auction_total", \
+	"bid_per_auction_mean","bid_per_auction_max","bid_per_auction_min","bid_per_auction_std","bid_per_auction_entropy" \
+	"bidder_ratio_per_auction_mean","bidder_ratio_per_auction_max","bidder_ratio_per_auction_min","bidder_ratio_per_auction_std","bidder_ratio_per_auction_entropy" \
+	"bid_override_num","bid_override_norm_num","bid_override_in_auction","bid_override_norm_num_in_auction","bid_override_by_total_bid_override_mean","bid_override_by_total_bid_override_max","bid_override_by_total_bid_override_min","bid_override_by_total_bid_override_std","bid_override_by_total_bid_override_entropy" \
+	"country_per_bidder","country_per_bidder_entropy","country_per_auction_entropy_mean","country_per_auction_entropy_max","country_per_auction_entropy_min","country_per_auction_entropy_std", "country_per_auction_entropy_entropy" \
+	"device_per_bidder","device_per_bidder_entropy","device_per_auction_entropy_mean","device_per_auction_entropy_max","device_per_auction_entropy_min","device_per_auction_entropy_std", "device_per_auction_entropy_entropy"
+	"ip_per_bidder","ip_per_bidder_entropy","ip_share_num","ip_per_auction_entropy_mean","ip_per_auction_entropy_max","ip_per_auction_entropy_min","ip_per_auction_entropy_std","ip_per_auction_entropy_std"\
+	]
 	with open(outputFile, 'w', newline="") as fo:
 		writer =csv.writer(fo)
+		writer.writerow(titles)
 		for row in rows:
 			# print(row)
 			writer.writerow(row)
