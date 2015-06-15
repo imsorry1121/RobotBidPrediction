@@ -1,0 +1,250 @@
+head(pred)
+head(bid.test.ans$outcome)
+head(bid.test)
+head(bid.test.ans)
+o = cbind(bid.test.ans$bidder_id, pred)
+head(o)
+head(pred)
+head(bid.test.ans$bidder_id)
+bid.test.ans$prediction = pred
+head(bid.test.ans)
+bid.test.ans = bid.test.ans[,-c(2,3)]
+head(bid.test.ans)
+write.csv(bid.test.ans, 'tempResult.csv')
+write.csv(bid.test.ans, 'tempResult.csv', row.names=F)
+p = predict(bid.csv, bid.train)
+p = predict(bid.csv, bid.train[,-length(bid.train)])
+p = predict(bid.svm, bid.train[,-length(bid.train)])
+octable = table(p, bid.train.ans)
+nrow(p)
+p
+head(bid.train.ans)
+octable = table(p, bid.train.ans$outcome)
+octable
+(1821+3)/(1821+3+100+89)
+source("classifier.R")
+head(pred)
+source("classifier.R")
+head(pred)
+source("classifier.R")
+head(pred)
+pred = pred(dict(bid.csv, bid.test, probability = T))
+source("classifier.R")
+head(pred)
+source("classifier.R")
+head(pred)
+head(bid.test.ans)
+source("classifier.R")
+head(bid.test.ans)
+head(pred)
+head(pred[,2])
+bid.test.ans$outcome = pred[.2]
+bid.test.ans$outcome = pred[,2]
+head(bid.test.ans)
+nrow(bid.test.ans)
+nrow(pred)
+source("classifier.R")
+nrow(pred)
+nrow(read.csv("../result/train.csv"))
+nrow(pred[,2])
+head(pred[,2])
+length(pred[,2])
+nrow(bid.train)
+nrow(bid.test)
+nrow(read.csv("../result/featureTest.csv"), header=F)
+nrow(read.csv("../result/featureTest.csv", header=F))
+source("classifier.R")
+head(pred)
+head(pred[,2])
+source("classifier.R")
+bid.tune
+source("classifier.R")
+rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree=50))
+model = do.call(combine, rf)
+pred = predict(model, bid.test, type='prob')
+head(pred)
+bid.test.ans$prediction = pred[,2]
+write.csv(bid.test.ans, 'tempResult.csv', row.names=F)
+varImp
+require(varImp)
+require(caret)
+?varImp
+varImp(rf)
+rf
+varImp(model)
+head(bid.train)
+head(bid.train[,-length(bid.train)])
+rfcv(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], cv.fold=10, scale="log")
+?tuneRF
+randomForest
+p1 = predict(rf[[1]], bid.test, type='prob')
+head(p1)
+bid.test.ans$prediction = p1[,2]
+write.csv(bid.test.ans, "tempResult.csv", row.names=F)
+?tuneRF
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)])
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 6)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 6, stepFactor = 1)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 6, stepFactor = 3)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 6, stepFactor =1.5)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 6, stepFactor =1.1)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 6, stepFactor =1.2)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 4, stepFactor =1.2)
+tuneRF(bid.train[,-length(bid.train)], bid.train[,length(bid.train)], mtryStart = 4, stepFactor =2)
+rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree=50, mtry = 4))
+model = do.call(combine, rf)
+pred = predict(model, bid.test, type='prob')
+bid.test.ans$prediction = pred[,2]
+write.csv(bid.test.ans, 'tempResult.csv', row.names=F)
+source("classifier.R")
+seq(1,5,2)
+p = data.frame()
+p = rbind(p, 1:3)
+p
+p = rbind(p, 1:3)
+p
+p = data.frame()
+names(P) = c("s", "d")
+names(p) = c("s", "d")
+pd = rep(0, nrow(pred))
+head(pd)
+pd[pred[,2]>0.5]=1
+head(pd)
+summary(pd)
+table(pd, rep(1, nrow(pred)))
+nrow(pred)
+table(pd, c(rep(1, nrow(pred)/2), rep(0, nrow(pred)/2)))
+mean(c(1,2,3))
+mean(c(1,2,4))
+?which.min
+ker = cbind(c(4,8,12), c(1,2,3))
+ker
+which.max(ker)
+require(cluster)
+clusGap
+ker = cbind(c(1,2,3), c(4,8,12))
+which.max(ker)
+ker
+ker[ker[,2]==max(ker[,2]),]
+source("tune.r")
+head(pp)
+head(p)
+p[p[,4] == max(p[,4])]
+p[p[,4]==max(p[,4])]
+p[p[,4]==max(p[,4]),]
+source("classifier.r")
+z = read.csv("featureTrain2015615_1548")
+z = read.csv("../result/featureTrain2015615_1548")
+z = read.csv("../result/featureTrain2015615_1548.csv")
+z = read.csv("../result/featureTrain2015615_1548.csv", header=F)
+head(z)
+summary(z[,1])
+nrow(z)
+nrow(bid.train)
+z = z[-z[,1]==0]
+z = z[-z[,1]==as.factor(0)]
+z = z[-z[,1]==as.factor(0),]
+nrow(z)
+z = read.csv("../result/featureTrain2015615_1548.csv")
+nrow(z)
+head(z)
+z = read.csv("../result/featureTrain2015615_1548.csv")
+head(z)
+z = read.csv("../result/featureTest2015615_1548.csv")
+head(z)
+z = read.csv("../result/featureTest2015615_1548.csv")
+head(z)
+summary(outcome)
+summary(z$outcome)
+source("classifier.R")
+sum(z)
+summary()
+summary(z)
+length(z)
+source("classifier.R")
+varImp(model)
+v = varImp(model)
+v[order(v[,2]),]
+head(v)
+v[order(v),]
+v[order(v)]
+v = data.frame(varImp(model))
+head(v)
+v[,2] = col.names(v)
+colname
+colnames
+v[,2] = colnames(v)
+head(v)
+v[,2] = rownames(v)
+v
+head(v)
+v[order(v[,2]),]
+v[order(v[,1]),]
+v[-order(v[,1]),]
+v[order(v[,1], decrease=T),]
+v[order(v[,1]),]
+v[order(v[,1], decrease=T),]
+sort(varImp(model), decrease=T)
+sort(varImp(model))
+sort(varImp(model)[1])
+sort(varImp(model)[1,])
+v = data.frame(varImp(model))
+summary(v)
+head(v)
+sort(v)
+v[order(v),]
+v[order(v[,1]),]
+names(v[order(v[,1]),])
+v = cbind(rownames(v), v)
+head(v)
+names(v[order(v[,2]),])
+v[order(v[,2]),]
+v[1]
+v[1,1]
+v[1,]
+v[1,1]
+v[2,1]
+v[1,2]
+v[order(v[,2]),1]
+v[-order(v[,2]),1]
+v[order(-v[,2]),1]
+vname = v[order(-v[,2]),1]
+vname[1:10]
+v = varImp(model)
+v = cbind(rownames(v), v)
+vnames = v[order(-v[,2]),1]
+topV = vnames[1:20]
+topV
+sep(topV)
+sep_len(topV)
+paste(topV)
+paste(topV, collapse="+")
+as.character(f)
+?paste
+paste("outcome", paste(topV, collapse=" + "), sep = " ~ ")
+as.formula(paste("outcome", paste(topV, collapse=" + "), sep = " ~ "))
+source("classifier.r")
+length(bid.train)
+f
+source("tune.r")
+source("tune.r")
+head(bid.train)
+source("tune.r")
+head(bid.train)
+bid.train$outcome = as.factor(bid.train$outcome)
+head(bid)
+head(bid.train)
+source("tune.r")
+p[p[,3]==max(p[,3]),]
+?randomForest
+source("classifier.R")
+source("classifier.R")
+source("classifier.R")
+source("classifier.R")
+source("classifier.R")
+source("classifier.R")
+require(adabag)
+install.packages("adabag")
+require(adabag)
+require(adabag)
+source("classifier.R")

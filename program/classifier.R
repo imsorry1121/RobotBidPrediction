@@ -2,20 +2,24 @@ require(e1071)
 require(randomForest)
 require(C50)
 require(nnet)
+require(adabag)
 
 set.seed(1)
-bid.train = read.csv("../result/featureTrain.csv", header = F)
-bid.test = read.csv("../result/featureTest.csv", header = F)
-bid.train.ans = read.csv("../result/train.csv")
+bid.train = read.csv("../result/featureTrain2015615_1548.csv")
+bid.test = read.csv("../result/featureTest2015615_1548.csv")
 bid.test.ans = read.csv("../result/test.csv")
 
-
-names(bid.train) = names(bid.test) = c('id', 'bidNum', 'auctionNum', 'bidNumPerAuction', 'bidNumPerAuctionEntropy', 'bidPropPerAuction', 'bidOverlapNum', 'bidOverlapNormNum', 'bidOverlapPerAuction', 'bidOverlapPerAuctionNorm', 'countryNum', 'countryNumEntropy', 'deviceNum', 'deviceNumEntropy', 'ipNum', 'ipShared')
-bid.train$outcome = as.factor(bid.train.ans$outcome)
-#bid.test$outcome = bid.test.ans$outcome
-bid.train$id = bid.test$id = NULL
+bid.train$outcome = as.factor(bid.train$outcome)
+bid.test$outcome = NULL
 f = outcome~.
-rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree = 130, mtry = 3))
+#rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree = 50))
+#model = do.call(combine, rf)
+#v = varImp(model)
+#v = cbind(rownames(v), v)
+#vnames = v[order(-v[,2]),1]
+#topV = vnames[1:80]
+#f = as.formula(paste("outcome", paste(topV, collapse=" + "), sep = " ~ "))
+rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree = 500))
 model = do.call(combine, rf)
 pred = predict(model, bid.test, type='prob')
 bid.test.ans$prediction = pred[,2]
