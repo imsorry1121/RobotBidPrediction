@@ -240,7 +240,7 @@ def getFeatures(g, bidders, ipDistri, outcomes):
 	return rows
 
 def writeRow(rows, outputFile):
-	titles = ["bid_total","auction_total", \
+	titles = ["outcome","bid_total","auction_total", \
 	"bid_per_auction_mean","bid_per_auction_max","bid_per_auction_min","bid_per_auction_std","bid_per_auction_entropy" \
 	"bidder_ratio_per_auction_mean","bidder_ratio_per_auction_max","bidder_ratio_per_auction_min","bidder_ratio_per_auction_std","bidder_ratio_per_auction_entropy" \
 	"bid_override_num","bid_override_norm_num","bid_override_in_auction","bid_override_norm_num_in_auction","bid_override_by_total_bid_override_mean","bid_override_by_total_bid_override_max","bid_override_by_total_bid_override_min","bid_override_by_total_bid_override_std","bid_override_by_total_bid_override_entropy" \
