@@ -19,7 +19,7 @@ f = outcome~.
 #vnames = v[order(-v[,2]),1]
 #topV = vnames[1:80]
 #f = as.formula(paste("outcome", paste(topV, collapse=" + "), sep = " ~ "))
-rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree = 500))
+rf = lapply(1:10, function(j) randomForest(f, bid.train, ntree = 50)
 model = do.call(combine, rf)
 pred = predict(model, bid.test, type='prob')
 bid.test.ans$prediction = pred[,2]
